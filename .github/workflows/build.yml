@@ -18,15 +18,8 @@ jobs:
 
       - run: flutter create --platforms=android --project-name barro_tv --org com.kounadia .
 
-      - name: Nom, permissions et ecran de demarrage sombre
-        run: |
-          M=android/app/src/main/AndroidManifest.xml
-          grep -q INTERNET $M || sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' $M
-          sed -i 's#android:label="[^"]*"#android:label="BARRO TV"#' $M
-          for f in android/app/src/main/res/drawable*/launch_background.xml; do
-            printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">' '    <item android:drawable="@android:color/black" />' '</layer-list>' > $f
-          done
-          sed -i 's/Theme.Light.NoTitleBar/Theme.Black.NoTitleBar/g' android/app/src/main/res/values/styles.xml
+      - name: Preparer Android (nom, superposition, ouvrir avec Barro Play)
+        run: python3 outils/preparer_android.py
 
       - run: flutter pub get
 

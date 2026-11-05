@@ -86,7 +86,7 @@ Future<bool> confirmerSuppression(BuildContext context, Contenu c) async {
 }
 
 void lire(BuildContext context, Contenu c) =>
-    Navigator.push(context, MaterialPageRoute(builder: (_) => BarroPlay(c: c)));
+    Navigator.push(context, MaterialPageRoute(builder: (_) => BarroPlay.film(c)));
 
 // ---------- Page détail d'un film ----------
 

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'accueil.dart';
 import 'hors_ligne.dart';
+import 'lecteur.dart';
 import 'mes_telechargements.dart';
 import 'moi.dart';
+import 'natif.dart';
 
 const lienCatalogue =
     'https://raw.githubusercontent.com/barroapk/kd-res-07/main/d.json';
@@ -16,8 +18,19 @@ const surface = Color(0xFF16161D);
 const surface2 = Color(0xFF22222C);
 const gris = Color(0xFF9A9AA8);
 
+final navigateur = GlobalKey<NavigatorState>();
+
+/// Ouvre dans Barro Play une vidéo venant du téléphone.
+void ouvrirExterne(String lien) {
+  navigateur.currentState?.push(
+    MaterialPageRoute(builder: (_) => BarroPlay.externe(lien)),
+  );
+}
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  Natif.init();
+  Natif.onOuvrir = ouvrirExterne;
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
@@ -52,6 +65,7 @@ class BarroTV extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BARRO TV',
+      navigatorKey: navigateur,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -92,6 +106,10 @@ class _RacineState extends State<Racine> {
   void initState() {
     super.initState();
     charger();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final lien = await Natif.lienExterne();
+      if (lien != null) ouvrirExterne(lien);
+    });
   }
 
   Future<void> charger() async {
