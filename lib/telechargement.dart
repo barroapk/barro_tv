@@ -71,6 +71,7 @@ class _DetailsState extends State<Details> {
     });
   }
 
+  Future<void> supprimer() async { final ok = await showDialog<bool>(context: context, builder: (d) => AlertDialog(title: const Text("Supprimer ?"), content: const Text("La vidéo sera effacée du téléphone."), actions: [TextButton(onPressed: () => Navigator.pop(d, false), child: const Text("Annuler")), TextButton(onPressed: () => Navigator.pop(d, true), child: const Text("Supprimer"))])); if (ok != true) return; final f = await fichierDe(widget.c); if (await f.exists()) await f.delete(); setState(() => telecharge = false); }
   Future<void> lancer() async {
     setState(() { progres = 0; erreur = null; });
     try {
@@ -100,6 +101,7 @@ class _DetailsState extends State<Details> {
         Text('Réalisateur : ${c.realisateur}', style: const TextStyle(color: Colors.grey)),
         const SizedBox(height: 24),
         if (telecharge) ElevatedButton.icon(style: ElevatedButton.styleFrom(backgroundColor: rouge, foregroundColor: Colors.white), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BarroPlay(c: c))), icon: const Icon(Icons.play_arrow), label: const Text("Lire dans Barro Play")),
+        if (telecharge) TextButton.icon(onPressed: supprimer, icon: const Icon(Icons.delete, color: Colors.grey), label: const Text("Supprimer la vidéo", style: TextStyle(color: Colors.grey))),
         if (telecharge)
           const Row(children: [
             Icon(Icons.check_circle, color: Colors.green),

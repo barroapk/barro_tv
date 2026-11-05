@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'hors_ligne.dart';
 import 'telechargement.dart';
 
 const lienCatalogue =
@@ -57,8 +58,7 @@ class _AccueilState extends State<Accueil> {
   Future<void> charger() async {
     setState(() { chargement = true; erreur = null; });
     try {
-      final r = await http.get(Uri.parse(lienCatalogue));
-      final data = jsonDecode(r.body);
+      final data = jsonDecode(await lireCatalogue());
       tous = (data['contenus'] as List)
           .map((e) => Contenu.fromJson(e))
           .toList();
