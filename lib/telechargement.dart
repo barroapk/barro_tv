@@ -76,7 +76,7 @@ class _DetailsState extends State<Details> {
       await telecharger(widget.c, (p) => setState(() => progres = p));
       setState(() => telecharge = true);
     } catch (e) {
-      setState(() => erreur = 'Échec du téléchargement');
+      setState(() => erreur = 'Échec : $e');
     }
     setState(() => progres = null);
   }
