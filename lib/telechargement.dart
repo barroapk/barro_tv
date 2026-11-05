@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:pointycastle/export.dart';
+import 'package:pointycastle/export.dart' show CTRStreamCipher, AESEngine, ParametersWithIV, KeyParameter;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'main.dart';
 
