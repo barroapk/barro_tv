@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pointycastle/export.dart' show CTRStreamCipher, AESEngine, ParametersWithIV, KeyParameter;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'main.dart';
+import 'lecteur.dart';
 
 Future<Uint8List> lireCle() async {
   const s = FlutterSecureStorage();
@@ -98,6 +99,7 @@ class _DetailsState extends State<Details> {
         Text(c.titre, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         Text('Réalisateur : ${c.realisateur}', style: const TextStyle(color: Colors.grey)),
         const SizedBox(height: 24),
+        if (telecharge) ElevatedButton.icon(style: ElevatedButton.styleFrom(backgroundColor: rouge, foregroundColor: Colors.white), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BarroPlay(c: c))), icon: const Icon(Icons.play_arrow), label: const Text("Lire dans Barro Play")),
         if (telecharge)
           const Row(children: [
             Icon(Icons.check_circle, color: Colors.green),
