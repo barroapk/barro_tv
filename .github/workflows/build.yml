@@ -13,6 +13,7 @@ jobs:
         with:
           channel: stable
       - run: flutter create --platforms=android --project-name barro_tv --org com.kounadia .
+      - run: grep -q INTERNET android/app/src/main/AndroidManifest.xml || sed -i "s#<application#<uses-permission android:name=\"android.permission.INTERNET\"/><application#" android/app/src/main/AndroidManifest.xml
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4

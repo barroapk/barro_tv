@@ -8,5 +8,8 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.2.0
+  path_provider: ^2.1.0
+  pointycastle: ^3.9.0
+  flutter_secure_storage: ^9.2.0
 flutter:
   uses-material-design: true

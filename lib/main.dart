@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'telechargement.dart';
 
 const lienCatalogue =
     'https://raw.githubusercontent.com/barroapk/kd-res-07/main/d.json';
@@ -123,7 +124,7 @@ class _AccueilState extends State<Accueil> {
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3, childAspectRatio: 0.55,
             crossAxisSpacing: 10, mainAxisSpacing: 10),
-        itemBuilder: (_, i) => carte(liste[i]),
+        itemBuilder: (_, i) => GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Details(c: liste[i]))), child: carte(liste[i])),
       ),
     );
   }
