@@ -29,7 +29,7 @@ class _MesTelechargementsState extends State<MesTelechargements> {
 
   Future<void> charger() async {
     final res = <(Contenu, int)>[];
-    for (final c in widget.tous) {
+    for (final c in widget.tous.expand((x) => x.elements)) {
       final f = await fichierDe(c);
       if (await f.exists()) res.add((c, await f.length()));
     }

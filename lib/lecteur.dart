@@ -66,12 +66,17 @@ class BarroPlay extends StatefulWidget {
   final String titre;
   final String? idReprise;
   final Future<(VideoPlayerController, File?)> Function() preparer;
-  const BarroPlay({super.key, required this.titre, required this.preparer, this.idReprise});
 
-  /// Film téléchargé et chiffré dans BARRO TV.
-  factory BarroPlay.film(Contenu c) => BarroPlay(
+  /// Renvoie le lecteur de l'épisode suivant (s'il est téléchargé), sinon null.
+  final Future<BarroPlay?> Function()? suivant;
+  const BarroPlay(
+      {super.key, required this.titre, required this.preparer, this.idReprise, this.suivant});
+
+  /// Film ou épisode téléchargé et chiffré dans BARRO TV.
+  factory BarroPlay.film(Contenu c, {Future<BarroPlay?> Function()? suivant}) => BarroPlay(
         titre: c.titre,
         idReprise: c.id,
+        suivant: suivant,
         preparer: () async {
           final f = await dechiffrer(c);
           return (VideoPlayerController.file(f), f);
@@ -126,6 +131,12 @@ class _BarroPlayState extends State<BarroPlay> {
 
   Duration? repriseProposee;
 
+  // Épisode suivant
+  bool finTraitee = false;
+  BarroPlay? prochain;
+  int compte = 0;
+  Timer? compteur;
+
   @override
   void initState() {
     super.initState();
@@ -138,7 +149,50 @@ class _BarroPlayState extends State<BarroPlay> {
   }
 
   void _maj() {
+    final c = v;
+    if (c != null &&
+        c.value.isInitialized &&
+        !finTraitee &&
+        c.value.duration > Duration.zero &&
+        !c.value.isPlaying &&
+        c.value.position >= c.value.duration - const Duration(milliseconds: 500)) {
+      finTraitee = true;
+      preparerSuivant();
+    }
     if (mounted) setState(() {});
+  }
+
+  Future<void> preparerSuivant() async {
+    if (mounted) setState(() => controles = true);
+    final p = await widget.suivant?.call();
+    if (p == null || !mounted) return;
+    setState(() {
+      prochain = p;
+      compte = 5;
+    });
+    compteur = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => compte--);
+      if (compte <= 0) {
+        t.cancel();
+        lancerSuivant();
+      }
+    });
+  }
+
+  void lancerSuivant() {
+    final p = prochain;
+    if (p == null) return;
+    compteur?.cancel();
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => p));
+  }
+
+  void annulerSuivant() {
+    compteur?.cancel();
+    setState(() => prochain = null);
   }
 
   Future<void> demarrer() async {
@@ -188,6 +242,7 @@ class _BarroPlayState extends State<BarroPlay> {
     masquage?.cancel();
     sauvegarde?.cancel();
     minuteurIndic?.cancel();
+    compteur?.cancel();
     sauver();
     v?.removeListener(_maj);
     v?.dispose();
@@ -431,6 +486,8 @@ class _BarroPlayState extends State<BarroPlay> {
             ),
             if (repriseProposee != null && !verrou)
               Positioned(left: 24, bottom: 76, child: SafeArea(child: carteReprise())),
+            if (prochain != null)
+              Positioned(right: 24, bottom: 76, child: SafeArea(child: carteSuivant())),
             if (indicTexte != null) IgnorePointer(child: Center(child: carteIndicateur())),
           ]),
         );
@@ -623,6 +680,41 @@ class _BarroPlayState extends State<BarroPlay> {
           ),
         ],
       ]),
+    );
+  }
+
+  Widget carteSuivant() {
+    return Material(
+      color: surface.withValues(alpha: 0.96),
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Épisode suivant', style: TextStyle(color: gris, fontSize: 12)),
+              const SizedBox(height: 2),
+              Text(prochain!.titre,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+            ]),
+          ),
+          const SizedBox(width: 14),
+          TextButton(
+            onPressed: annulerSuivant,
+            child: const Text('Annuler', style: TextStyle(color: gris)),
+          ),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+                backgroundColor: rouge, foregroundColor: Colors.white, shape: const StadiumBorder()),
+            onPressed: lancerSuivant,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text('Lire ($compte)', style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ]),
+      ),
     );
   }
 

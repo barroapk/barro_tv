@@ -24,7 +24,7 @@ class _MoiPageState extends State<MoiPage> {
   Future<void> calculer() async {
     var total = 0;
     var n = 0;
-    for (final c in widget.tous) {
+    for (final c in widget.tous.expand((x) => x.elements)) {
       final f = await fichierDe(c);
       if (await f.exists()) {
         total += await f.length();

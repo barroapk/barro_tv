@@ -40,8 +40,29 @@ void main() {
   runApp(const BarroTV());
 }
 
+class Episode {
+  final int numero;
+  final String titre, video, duree;
+  Episode.fromJson(Map<String, dynamic> j)
+      : numero = (j['numero'] as num?)?.toInt() ?? 0,
+        titre = '${j['titre'] ?? ''}',
+        video = '${j['video'] ?? ''}',
+        duree = '${j['duree'] ?? ''}';
+}
+
+class Saison {
+  final int numero;
+  final List<Episode> episodes;
+  Saison.fromJson(Map<String, dynamic> j)
+      : numero = (j['numero'] as num?)?.toInt() ?? 0,
+        episodes = ((j['episodes'] as List?) ?? [])
+            .map((e) => Episode.fromJson(e as Map<String, dynamic>))
+            .toList();
+}
+
 class Contenu {
   final String id, titre, type, genre, annee, duree, resume, realisateur, affiche, video;
+  final List<Saison> saisons;
 
   Contenu.fromJson(Map<String, dynamic> j)
       : id = '${j['id'] ?? ''}',
@@ -53,9 +74,37 @@ class Contenu {
         resume = '${j['resume'] ?? ''}',
         realisateur = '${j['realisateur'] ?? ''}',
         affiche = '${j['affiche'] ?? ''}',
-        video = '${j['video'] ?? ''}';
+        video = '${j['video'] ?? ''}',
+        saisons = ((j['saisons'] as List?) ?? [])
+            .map((s) => Saison.fromJson(s as Map<String, dynamic>))
+            .toList();
 
-  String get infos => [annee, genre, duree].where((s) => s.isNotEmpty).join('  •  ');
+  /// Un épisode est traité comme un petit film (téléchargement, lecture, suppression).
+  Contenu.episode(Contenu serie, Saison s, Episode e)
+      : id = '${serie.id}-s${s.numero}e${e.numero}',
+        titre = '${serie.titre} • S${s.numero} E${e.numero}',
+        type = 'episode',
+        genre = serie.genre,
+        annee = serie.annee,
+        duree = e.duree,
+        resume = e.titre,
+        realisateur = serie.realisateur,
+        affiche = serie.affiche,
+        video = e.video,
+        saisons = const [];
+
+  /// Tout ce qui peut être téléchargé : le film lui-même, ou chaque épisode d'une série.
+  List<Contenu> get elements => type == 'serie'
+      ? [for (final s in saisons) for (final e in s.episodes) Contenu.episode(this, s, e)]
+      : [this];
+
+  String get infos {
+    final parts = [annee, genre, duree].where((x) => x.isNotEmpty).toList();
+    if (type == 'serie' && saisons.isNotEmpty) {
+      parts.add('${saisons.length} saison${saisons.length > 1 ? 's' : ''}');
+    }
+    return parts.join('  •  ');
+  }
 }
 
 class BarroTV extends StatelessWidget {
